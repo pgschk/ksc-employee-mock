@@ -16,4 +16,5 @@ FROM alpine:3.17
 WORKDIR /app
 COPY --from=builder /app/ksc-employee-mock /app/ksc-employee-mock
 
+EXPOSE 8080
 ENTRYPOINT [ "/app/ksc-employee-mock" ]
