@@ -10,8 +10,15 @@ import (
 	"github.com/pgschk/namegen/pkg/namegen"
 )
 
-var numEmployeeRecords = 6
+// NumEmployeeRecords defines how many employee records will be returned per call
+const NumEmployeeRecords = 6
 
+/* struct of a KSC Employee containing:
+ * FirstName: A generated first name for the Kerbal.
+ * LastName: Kerman. Always Kerman. Don't think too much about it.
+ * Age: A random age between 22 and 39. Kerbals in the prime of their life.
+ * Position: One of the available jobs at KSC: Pilot, Scientist or Engineer.
+ */
 type KSCEmployee struct {
 	FirstName string `json:"firstName"`
 	LastName  string `json:"lastName"`
@@ -29,12 +36,14 @@ type Response struct {
 	Data   []*KSCEmployee `json:"data"`
 }
 
-var Jobs = [...]string{
+/* List of available jobs at KSC */
+var Jobs = [3]string{
 	"Pilot",
 	"Scientist",
 	"Engineer",
 }
 
+/* newKSCEmployee returns a KSC employee with a randomly generated first name */
 func newKSCEmployee() *KSCEmployee {
 	k := KSCEmployee{}
 	k.FirstName = namegen.GenerateName()
@@ -44,35 +53,32 @@ func newKSCEmployee() *KSCEmployee {
 	return &k
 }
 
+/* getEmployees handles a HTTP call and writes a JSON array of KSC employees */
 func getEmployees(w http.ResponseWriter, req *http.Request) {
 	response := Response{}
 	response.Status.Status = 200
 	response.Status.Time = time.Now().Unix()
-	for i := 0; i < numEmployeeRecords; i++ {
+
+	// fill array with multiple random KSC employees
+	for i := 0; i < NumEmployeeRecords; i++ {
 		response.Data = append(response.Data, newKSCEmployee())
 	}
 
+	// Marshal JSON response
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 
+	// output JSON
 	fmt.Fprint(w, string(jsonResponse))
 }
 
-func headers(w http.ResponseWriter, req *http.Request) {
-	for name, headers := range req.Header {
-		for _, h := range headers {
-			fmt.Fprintf(w, "%v: %v\n", name, h)
-		}
-	}
-}
-
+/* main set up simple HTTP server to return a JSON array of KSC employees */
 func main() {
 	rand.Seed(time.Now().UnixNano()) // initialize RNG seed
 	http.HandleFunc("/v1/employees", getEmployees)
-	http.HandleFunc("/headers", headers)
 
 	fmt.Println("KSC Employee Record API mock server starting. Don't expect more logging.")
 	http.ListenAndServe(":8080", nil)
