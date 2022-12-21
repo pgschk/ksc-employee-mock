@@ -15,15 +15,18 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  build_and_publish:
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v2
       
+      - name: Run tests
+        run: go test 
+      
       - name: Build ksc-employee-mock
         run: docker build . --tag ghcr.io/pgschk/ksc-employee-mock:latest
-
+      
       - name: Login to GHCR
         uses: docker/login-action@v2
         with:
